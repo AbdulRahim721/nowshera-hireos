@@ -77,6 +77,14 @@ def init_db():
         if email and password:
             con.execute('''INSERT INTO users(id,name,phone,email,password,role,active,cv_path,created_at) VALUES (?,?,?,?,?,?,?,?,?)
                 ON CONFLICT(email) DO UPDATE SET password=excluded.password,role=excluded.role,active=1''',(uid,role.title(),'',email,hashpw(password),role,1,None,now()))
+    if con.execute('SELECT COUNT(*) FROM jobs').fetchone()[0] == 0:
+        job_seed=[
+            ('demo-job-1','Frontend Engineer','Product','Remote','Full-time','Build delightful hiring tools and accessible interfaces.','JavaScript, React, CSS, product sense','2027-12-31',2,'open'),
+            ('demo-job-2','Software Engineer','Engineering','Hybrid · Nowshera','Full-time','Design reliable services and ship thoughtful product features.','Python, APIs, databases, teamwork','2027-12-31',2,'open'),
+            ('demo-job-3','AI Automation Engineer','Automation','Remote','Full-time','Connect AI workflows to useful, human-reviewed business automation.','APIs, n8n, Python, prompt safety','2027-12-31',1,'open')
+        ]
+        for jid,title,department,location,job_type,description,requirements,deadline,openings,status in job_seed:
+            con.execute('INSERT INTO jobs VALUES (?,?,?,?,?,?,?,?,?,?,?)',(jid,title,department,location,job_type,description,requirements,deadline,openings,status,now()))
     con.commit(); con.close()
 def hashpw(v): return hashlib.sha256(v.encode()).hexdigest()
 def now(): return datetime.utcnow().isoformat()
@@ -163,7 +171,7 @@ def apply(jid:str, background_tasks:BackgroundTasks, authorization:Optional[str]
     existing=con.execute("SELECT stage FROM applications WHERE job_id=? AND candidate_id=? AND stage<>'Withdrawn'",(jid,u['id'])).fetchone()
     if existing: raise HTTPException(409,'You already have an active application for this job')
     aid=str(uuid.uuid4()); con.execute('INSERT INTO applications VALUES (?,?,?,?,?,?,?,?,?,?)',(aid,jid,u['id'],u['cv_path'],'Applied','Summary not available',None,now(),now())); con.commit(); con.close()
-    common={'event_type':'application_received','application_id':aid,'candidate':{'id':u['id'],'name':u['name'],'email':u['email']},'job':{'id':job['id'],'title':job['title'],'requirements':job['requirements']},'cv_path':u['cv_path']}
+    common={'event_type':'application_received','application_id':aid,'recipient':u['email'],'candidate':{'id':u['id'],'name':u['name'],'email':u['email']},'job':{'id':job['id'],'title':job['title'],'requirements':job['requirements']},'cv_path':u['cv_path']}
     background_tasks.add_task(send_ai_summary,aid,{**common,'event_type':'ai_summary_requested'})
     background_tasks.add_task(post_n8n,N8N_EMAIL_WEBHOOK,common)
     return {'id':aid,'message':'Application received'}
@@ -238,3 +246,4 @@ def interview(aid:str,x:InterviewIn,background_tasks:BackgroundTasks,authorizati
 @app.get('/api/admin/dashboard')
 def dashboard(authorization:Optional[str]=Header(None)):
     u=current_user(authorization); require(u,'admin'); con=db(); jobs=con.execute('SELECT id,title,status,openings FROM jobs ORDER BY created_at DESC').fetchall(); counts=con.execute('SELECT job_id,stage,COUNT(*) total FROM applications GROUP BY job_id,stage').fetchall(); con.close(); return {'jobs':[rowdict(r) for r in jobs],'counts':[rowdict(r) for r in counts]}
+
