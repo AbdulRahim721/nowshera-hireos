@@ -1,0 +1,2 @@
+-- Optional demo seed. Create Auth users first, then insert matching profile UUIDs.
+-- Never put real CVs, passwords, or service keys in this file.

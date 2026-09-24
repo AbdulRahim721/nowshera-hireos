@@ -1,0 +1,13 @@
+project_id = "project-3"
+
+[api]
+enabled = true
+
+[db]
+port = 54322
+
+[studio]
+enabled = true
+
+[storage]
+enabled = true

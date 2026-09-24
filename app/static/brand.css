@@ -1,0 +1,6 @@
+/* Nowshera HireOS visual identity layer */
+:root{--nh-mint:#6ff5d5;--nh-violet:#9b7bff;--nh-ink:#080b18}
+.brand{letter-spacing:-.02em}.brand-mark{font-size:9px;letter-spacing:1.5px;color:var(--nh-mint);vertical-align:middle;margin-left:5px;font-weight:700;opacity:.9}
+.hero-copy .eyebrow{color:var(--nh-mint);letter-spacing:2.4px}.hero h1 em{background:linear-gradient(100deg,var(--nh-mint),#8fdcff 48%,var(--nh-violet));-webkit-background-clip:text;background-clip:text;color:transparent}
+.core-logo{box-shadow:0 0 55px rgba(111,245,213,.28),inset 0 0 25px rgba(155,123,255,.18)}
+.auth-card{backdrop-filter:blur(18px)}.auth-card .form-kicker{color:var(--nh-mint);letter-spacing:2px}
