@@ -1,11 +1,7 @@
-$pythonOk = Test-Path '.venv\Scripts\python.exe'
-if (!$pythonOk) {
-  try { py -3 --version | Out-Null; if ($LASTEXITCODE -eq 0) { py -3 -m venv .venv; $pythonOk = Test-Path '.venv\Scripts\python.exe' } } catch { $pythonOk = $false }
-}
-if ($pythonOk) {
-  .\.venv\Scripts\python.exe -m pip install -r requirements.txt
-  .\.venv\Scripts\python.exe -m uvicorn app.main:app --reload
-} else {
-  Write-Host 'Python is unavailable or broken. Starting HireFlow demo server with Node.js.' -ForegroundColor Yellow
-  node server.mjs
-}
+# The browser frontend is served by server.mjs. Keep one predictable launcher
+# so http://127.0.0.1:8000/ does not point at a different backend.
+$ErrorActionPreference = 'Stop'
+Set-Location $PSScriptRoot
+Write-Host 'Starting Nowshera HireOS at http://127.0.0.1:8000/' -ForegroundColor Cyan
+node .\server.mjs
+
