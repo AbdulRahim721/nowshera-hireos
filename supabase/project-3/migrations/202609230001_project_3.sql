@@ -34,4 +34,15 @@ create policy "candidate own interviews" on public.interviews for select to auth
 grant usage on schema public to anon,authenticated;
 grant select on public.jobs to anon,authenticated;
 grant select,insert,update on public.profiles,public.applications,public.interviews to authenticated;
+create or replace function public.handle_new_user() returns trigger language plpgsql security definer set search_path=public as $$
+begin
+  insert into public.profiles(id,name,phone,email,role,active)
+  values(new.id,coalesce(new.raw_user_meta_data->>'name',split_part(new.email,'@',1)),coalesce(new.raw_user_meta_data->>'phone',''),new.email,'candidate',true)
+  on conflict(id) do update set name=excluded.name,phone=excluded.phone,email=excluded.email;
+  return new;
+end;
+$$;
+revoke execute on function public.handle_new_user() from public,anon,authenticated;
+drop trigger if exists on_auth_user_created on auth.users;
+create trigger on_auth_user_created after insert on auth.users for each row execute function public.handle_new_user();
 
