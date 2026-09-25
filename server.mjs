@@ -52,7 +52,7 @@ const server=http.createServer(async (req,res)=>{
   let file=u.pathname==='/'?path.join(staticDir,'index.html'):path.join(staticDir,u.pathname.replace('/static/',''));
   if(!file.startsWith(staticDir))return json(res,404,{detail:'Not found'});
   if(!fs.existsSync(file))return json(res,404,{detail:'Not found'});
-  const ext=path.extname(file);const types={'.html':'text/html','.js':'text/javascript','.css':'text/css'};res.writeHead(200,{'Content-Type':types[ext]||'application/octet-stream'});fs.createReadStream(file).pipe(res);
+  const ext=path.extname(file);const types={'.html':'text/html','.js':'text/javascript','.css':'text/css'};res.writeHead(200,{'Content-Type':types[ext]||'application/octet-stream','Cache-Control':'no-store, max-age=0'});fs.createReadStream(file).pipe(res);
 });
 server.listen(8000,'127.0.0.1',()=>console.log('Nowshera HireOS demo server running at http://127.0.0.1:8000'));
 
